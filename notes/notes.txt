@@ -1,0 +1,3 @@
+Make a helper header file with:
+
+	Function to handle printing errors
