@@ -1,0 +1,11 @@
+we now have valid program instructions 
+
+1. Start the server:
+	this should be done with an IP address that can be accessed
+	by anyone connected to the same local network
+
+	the program then outputs the IP so that the user knows what to
+	connect to
+
+
+	- listen on an IP address for a request

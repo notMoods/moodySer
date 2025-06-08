@@ -8,7 +8,16 @@
 
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <errno.h>
 #include "../headers/helpers.h"
+
 
 int main(int argc, char *argv[]){
 	struct Program_Instructions instructions;
@@ -31,7 +40,13 @@ int main(int argc, char *argv[]){
 
 	//at this point we have a valid program instruction
 	
+	const char* html_string = prepare_html_file(&instructions);
 
+	printf("%s", html_string);
+
+	
+	
+	free((void*)html_string);
 	return 0;
 
 }
