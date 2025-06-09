@@ -20,3 +20,5 @@ void send_404(int client_socket);
 void serve_file(int client_socket, const char* page_or_path, enum ARG_TYPE arg_type);
 
 const char* prepare_html_file(struct Program_Instructions* ins);
+
+int set_non_blocking_socket(int server_socket);

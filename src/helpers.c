@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 
 #include "../headers/helpers.h"
@@ -209,4 +210,19 @@ void serve_file(int client_socket, const char* page_or_path, enum ARG_TYPE arg_t
 		write(client_socket, response, strlen(response));
 		write(client_socket, page_or_path, strlen(page_or_path));
 	}
+}
+
+int set_non_blocking_socket(int server_socket) {
+	if (server_socket < 0) return 0;
+
+	int status = fcntl(server_socket, F_SETFL, fcntl(server_socket, F_GETFL, 0) | O_NONBLOCK);
+
+	if (status == -1) {
+		perror("calling fcntl");
+
+		return 0;
+	}
+
+	return 1;
+
 }
