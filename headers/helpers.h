@@ -1,8 +1,8 @@
 #pragma once
-enum Arg_Type { Invalid = 0, Raw_Text = 1, Path = 2 };
+enum ARG_TYPE { INVALID = 0, RAW_TEXT = 1, PATH = 2 };
 
 struct Program_Instructions {
-	enum Arg_Type arg_Type;
+	enum ARG_TYPE arg_Type;
 	const char * content;
 };
 
@@ -17,6 +17,6 @@ void print_local_ip();
 
 void send_404(int client_socket);
 
-void serve_file(int client_socket, const char* path, const char* content_type);
+void serve_file(int client_socket, const char* page_or_path, enum ARG_TYPE arg_type);
 
 const char* prepare_html_file(struct Program_Instructions* ins);

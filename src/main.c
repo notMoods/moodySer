@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -17,6 +18,9 @@
 #include <ifaddrs.h>
 #include <errno.h>
 #include "../headers/helpers.h"
+
+#define PORT 8080
+#define BUFFER_SIZE 4096
 
 
 int main(int argc, char *argv[]){
@@ -42,10 +46,53 @@ int main(int argc, char *argv[]){
 	
 	const char* html_string = prepare_html_file(&instructions);
 
-	printf("%s", html_string);
+	int server_fd, client_socket;
+	struct sockaddr_in address;
+	socklen_t addrlen = sizeof(address);
+	char buffer[BUFFER_SIZE];
+
+	server_fd = socket(AF_INET, SOCK_STREAM, 0);
+
+	address.sin_family = AF_INET;
+	address.sin_addr.s_addr = INADDR_ANY;
+	address.sin_port = htons(PORT);
+
+	bind(server_fd, (struct sockaddr*) &address, sizeof(address));
+	listen(server_fd, 10);
+
+	print_local_ip();
+	printf("Server running on port %d\n", PORT);
+
+	char download_buffer[80];
+
+	while(1) {
+		client_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
+		int bytes_read = read(client_socket, buffer, BUFFER_SIZE - 1);
+
+		if(bytes_read <= 0) {
+			close(client_socket);
+			continue;
+		}
+
+		buffer[bytes_read] = '\0';
+
+		if(strncmp(buffer, "GET / ", 6) == 0) {
+			serve_file(client_socket, html_string, RAW_TEXT);
+		} else {
+			sprintf(download_buffer, "GET /%s", instructions.content);
+
+			if(strncmp(buffer, download_buffer, strlen(download_buffer)) == 0){
+				serve_file(client_socket, instructions.content, PATH);
+			} else {
+				send_404(client_socket);
+			}
+		}
+
+		close(client_socket);
+	}
 
 	
-	
+	close(server_fd);
 	free((void*)html_string);
 	return 0;
 

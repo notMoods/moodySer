@@ -64,7 +64,7 @@ void print_help_screen(){
 int tryParseArguments(const char* arg_type, const char* content, struct Program_Instructions* ins){
 	if( string_compare(arg_type, "raw-text") ) {
 		//at this point it's a raw text situation
-		ins->arg_Type = 1;
+		ins->arg_Type = RAW_TEXT;
 		ins->content = content;
 
 		return 1;
@@ -72,7 +72,7 @@ int tryParseArguments(const char* arg_type, const char* content, struct Program_
 
 	if( string_compare(arg_type, "path") && is_valid_filepath(content) ) {
 		//at this point it is a valid file situation
-		ins->arg_Type = 2;
+		ins->arg_Type = PATH;
 		ins->content = content;
 
 		return 1;
@@ -97,7 +97,7 @@ const char* prepare_html_file(struct Program_Instructions* ins){
 
 	char* content = (char*)malloc(strlen(ins->content) + 75);
 
-	if(ins->arg_Type == 1) {
+	if(ins->arg_Type == RAW_TEXT) {
 		sprintf(content, "<p>%s</p>", ins->content);
 	}
 	else {
@@ -155,7 +155,58 @@ void send_404(int client_socket){
 	write(client_socket, body, strlen(header));
 }
 
-void serve_file(int client_socket, const char* path, const char* content_type){
+//maybe restructure this later
+void serve_file(int client_socket, const char* page_or_path, enum ARG_TYPE arg_type){
+	if(arg_type == PATH){
+		FILE* fp = fopen(page_or_path, "rb");
 
+		if(!fp){
+			const char* not_found =
+			       	"HTTP/1.1 404 Not Found\r\n"
+				"Content-Type: text/plain\r\n"
+				"Connection: close\r\n\r\n"
+				"File not found\n";
 
+			write(client_socket, not_found, strlen(not_found));
+			return;
+		}
+
+		fseek(fp, 0, SEEK_END);
+		long filesize = ftell(fp);
+		rewind(fp);
+
+		char header[512];
+		snprintf(header, sizeof(header),
+				"HTTP/1.1 200 OK \r\n"
+				"Content-Type: application/octet-stream\r\n"
+				"Content-Disposition: attachment; filename=\"a_file\"\r\n"
+				"Content-Length: %ld\r\n"
+				"Connection: close\r\n\r\n",
+				filesize);
+
+		write(client_socket, header, strlen(header));
+
+		char buffer[1024];
+		size_t bytes_read;
+		while((bytes_read = fread(buffer, 1, sizeof(buffer), fp)) > 0){
+			write(client_socket, buffer, bytes_read);
+		}
+
+		fclose(fp);
+
+	} else {
+		// the Content-Type is text/html
+		
+		char response[1024];
+
+		snprintf(response, sizeof(response), 
+				"HTTP/1.1 200\r\n"
+				"Content-Type: text/html\r\n"
+				"Content-Length: %lu\r\n"
+				"Connection: close\r\n\r\n",
+				strlen(page_or_path));
+
+		write(client_socket, response, strlen(response));
+		write(client_socket, page_or_path, strlen(page_or_path));
+	}
 }
