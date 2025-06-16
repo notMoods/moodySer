@@ -129,6 +129,9 @@ void print_local_ip() {
 
 	printf("Go to these links on the device on the same network\n");
 
+
+	char ip_address[40];
+
 	for(ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next){
 
 		if(ifa->ifa_addr == NULL || ifa->ifa_addr->sa_family != AF_INET)
@@ -138,8 +141,12 @@ void print_local_ip() {
 
 		inet_ntop(AF_INET, addr_ptr, ip, sizeof(ip));
 
-		if(strcmp(ip, "127.0.0.1") != 0)
-			printf("\thttp://%s:%d/\n", ip, PORT);
+		if(strcmp(ip, "127.0.0.1") != 0) {
+			sprintf(ip_address, "http://%s:%d/", ip, PORT);
+			printf("\t%s\n\n", ip_address);
+		
+			print_qr_code(ip_address);
+		}
 
 	}
 

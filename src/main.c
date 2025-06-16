@@ -96,8 +96,8 @@ int main(int argc, char *argv[]){
 		int bytes_read = read(client_socket, buffer, BUFFER_SIZE - 1);
 
 		if(bytes_read <= 0) {
-			if (check_for_halt() != 0) break;
 			close(client_socket);
+			if(check_for_halt() != 0) break;
 			usleep(10000);
 			continue;
 		}

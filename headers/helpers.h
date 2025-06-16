@@ -8,6 +8,8 @@ struct Program_Instructions {
 
 void print_error(const char* error_message);
 
+void print_qr_code(const char* address);
+
 void print_help_screen();
 
 //look into returning a BOOL type where 0 = FALSE and 1 = TRUE
